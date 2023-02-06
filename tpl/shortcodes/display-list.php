@@ -3,8 +3,9 @@
 ?>
 <style>
     .tdw-github-posts-shortcode-display-list{
-
+        margin-top: 1rem;
     }
+    .tdw-github-posts-shortcode-display-list h2,
     .tdw-github-posts-shortcode-display-list h3{
         margin-bottom: 0;
         padding-top: 0;
@@ -14,7 +15,7 @@
         font-size: 0.8rem;
     }
     .tdw-github-posts-shortcode-display-list-item{
-        margin-bottom: 2rem;
+        margin-top: 1rem;
     }
 </style>
 <div class="tdw-github-posts-shortcode tdw-github-posts-shortcode-display-list">
@@ -22,7 +23,9 @@
         try{
             echo !empty($header) ? "<h2>{$header}</h2>" : '';
 
-            foreach($tdw_github_posts->repos as $repo){
+            echo !empty($intro) ? "<div>{$intro}</div>" : '';
+
+            foreach($repos as $repo){
                 $repo_name = $display_repo_user && isset($repo->name) ? $repo->name : $repo->full_name ?? '';
                 $description = isset($repo->description) ? str_replace(['[code]', '[/code]'], '', $repo->description) : "(No description provided)";
                 ?>
