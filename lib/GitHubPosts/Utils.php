@@ -1,6 +1,9 @@
 <?php
 namespace Tdw\GitHubPosts;
 
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
+
 class Utils{
     //Declare our instances array
     private static array $instances = array();
@@ -23,21 +26,12 @@ class Utils{
     }
 
     /**
-     * Records any variable to the error log
-     * @param $var
-     * @return void
-     */
-    public function elog($var): void
-    {
-        error_log(print_r($var,true));
-    }
-
-    /**
      * Determines if a status code is a success
-     * @param int $statusCode
+     * @param ResponseInterface $response
      * @return bool
      */
-    public function isSuccess(int $statusCode): bool{
+    public function isSuccess(ResponseInterface $response): bool{
+        $statusCode = $response->getStatusCode();
         return $statusCode >= 200 && $statusCode < 400;
     }
 
@@ -53,8 +47,4 @@ class Utils{
 
         return self::$instances[static::class];
     }
-
-    //Seal off the clone and wakeup functions as they are not usable in a singleton pattern
-    private function __clone() {}
-    private function __wakeup() {}
 }

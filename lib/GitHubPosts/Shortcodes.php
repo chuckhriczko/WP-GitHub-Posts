@@ -23,7 +23,4 @@ class Shortcodes
 
         return self::$instances[static::class];
     }
-
-    private function __clone() {}
-    private function __wakeup() {}
 }

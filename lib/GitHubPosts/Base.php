@@ -1,7 +1,7 @@
 <?php
 namespace Tdw\GitHubPosts;
 
-use Masterminds\HTML5\Exception;
+use Exception;
 use Symfony\Component\HttpClient\HttpClient;
 use Tdw\GitHubPosts\Types\GitHubRepo;
 use Tdw\GitHubPosts\Types\GitHubUser;
@@ -49,68 +49,59 @@ class Base
         $isCached = $this->getFromCache();
 
         //If cache failed then we refresh data from GitHub
-        if (!$isCached) {
-            $this->utils->log("Cache expired at " . date('m-j-Y H:i:s', filemtime($this->userdata_cache_file)));
+        if ($isCached) return;
 
-            try {
-                //Create our client and send the request
-                $client = HttpClient::create();
-                $response = $client->request('GET', Constants::USERS_URL);
+        $this->utils->log("Cache expired at " . date('m-j-Y H:i:s', filemtime($this->userdata_cache_file)));
 
-                //Verify the result is successful
-                if ($this->utils->isSuccess($response->getStatusCode())) {
-                    //Get and cache the user data
-                    $userdata = $response->getContent();
-                    if (!empty($userdata)) {
-                        file_put_contents($this->userdata_cache_file, $userdata);
-                    }
+        try {
+            //Create our client and send the request
+            $client = HttpClient::create();
+            $response = $client->request('GET', Constants::USERS_URL);
 
-                    //Create the user object from the JSON retrieved
-                    $this->user = new GitHubUser($userdata);
-                    $this->utils->log($this->user);
-
-                    //Verify we have a repos url
-                    if (isset($this->user->repos_url) && !empty($this->user->repos_url)) {
-                        //Get the repo data
-                        $repos_response = $client->request('GET', $this->user->repos_url.'?sort=created&direction=desc');
-
-                        //Verify the result was successful
-                        if ($this->utils->isSuccess($repos_response->getStatusCode())) {
-                            //Get and cache the data
-                            $repojson = $repos_response->getContent();
-                            if (!empty($repojson)) {
-                                file_put_contents($this->repodata_cache_file, $repojson);
-                            }
-
-                            //Instantiate our repos array
-                            $repodata = $repos_response->toArray();
-                            foreach ($repodata as $repo) {
-                                $this->repos[] = new GitHubRepo($repo);
-                            }
-                            $this->utils->log($this->repos);
-
-                            //Return early
-                            return;
-                        }
-
-                        $this->utils->log('Error getting repos');
-                    }
-
-                    $this->utils->log("Error getting GitHub repo data");
-                    return;
-                }
-
-                //If we fall here, we try to use cache as a fallback
-                $this->getFromCache();
-
-                $this->utils->log("Error getting GitHub user data: " . $response->getStatusCode());
-                return;
-            } catch (\Exception $e) {
-                $this->utils->log("{Error getting GitHub user data: " . $e->getMessage());
-
-                //If we fall here, we try to use cache as a fallback
-                $this->getFromCache();
+            //Verify the result is successful
+            if (!$this->utils->isSuccess($response)) {
+                throw new Exception('Failed getting user data');
             }
+
+            //Get and cache the user data
+            $userdata = $response->getContent();
+            if (!empty($userdata)) {
+                file_put_contents($this->userdata_cache_file, $userdata);
+            }
+
+            //Create the user object from the JSON retrieved
+            $this->user = new GitHubUser($userdata);
+            $this->utils->log($this->user);
+
+            //Verify we have a repos url
+            if (!(isset($this->user->repos_url) && !empty($this->user->repos_url))) {
+                throw new Exception('The repos url cannot be found');
+            }
+
+            //Get the repo data
+            $repos_response = $client->request('GET', $this->user->repos_url.'?sort=created&direction=desc');
+
+            //Verify the result was successful
+            if (!$this->utils->isSuccess($repos_response)) {
+                throw new Exception('There was an error retrieving the list of repos');
+            }
+
+            //Get and cache the data
+            $repojson = $repos_response->getContent();
+            if (!empty($repojson)) {
+                file_put_contents($this->repodata_cache_file, $repojson);
+            }
+
+            //Instantiate our repos array
+            $repodata = $repos_response->toArray();
+            foreach ($repodata as $repo) {
+                $this->repos[] = new GitHubRepo($repo);
+            }
+        } catch (\Exception $e) {
+            $this->utils->log($e->getMessage());
+
+            //If we fall here, we try to use cache as a fallback
+            $this->getFromCache();
         }
     }
 
@@ -120,11 +111,6 @@ class Base
      */
     private function getFromCache(): bool
     {
-        /*$this->utils->log("User Cache Exists: ".file_exists($this->userdata_cache_file));
-        $this->utils->log("User Cache Expires: ".date('m-d-Y H:i:s', filemtime($this->userdata_cache_file)));
-        $this->utils->log("Repo Cache Exists: ".file_exists($this->userdata_cache_file));
-        $this->utils->log("Repo Cache Expires: ".date('m-d-Y H:i:s', filemtime($this->userdata_cache_file)));*/
-
         try {
             //First, we check to see if we have cached data
             //Cache is valid for 10 minutes before needing to be refreshed
@@ -144,11 +130,10 @@ class Base
                     $this->repos[] = new GitHubRepo($repo);
                 }
 
-                //Return early to short circuit the rest of the function
                 return true;
             }
         } catch(\Exception $e){
-            $this->utils->log("{Error getting cached GitHub user data: ".$e->getMessage());
+            $this->utils->log("Error getting cached GitHub user data: ".$e->getMessage());
         }
 
         return false;
