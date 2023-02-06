@@ -72,7 +72,7 @@ class Base
                     //Verify we have a repos url
                     if (isset($this->user->repos_url) && !empty($this->user->repos_url)) {
                         //Get the repo data
-                        $repos_response = $client->request('GET', $this->user->repos_url);
+                        $repos_response = $client->request('GET', $this->user->repos_url.'?sort=created&direction=desc');
 
                         //Verify the result was successful
                         if ($this->utils->isSuccess($repos_response->getStatusCode())) {
