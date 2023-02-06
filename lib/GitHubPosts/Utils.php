@@ -18,11 +18,13 @@ class Utils{
      * @param bool|null $log_name
      * @return void
      */
-    public function log($var, bool | null $log_name = null): void
+    public function log($var, bool | null $log_name = null, $override_debug_mode = false): void
     {
-        $file = TDW_GITHUB_POSTS_PLUGIN_DIR.'/logs/'.($log_name ?? 'log');
-        file_put_contents($file, "\r\n------------".date("Y-m-d H:i:s")." --------------------------------------------------\r\n", FILE_APPEND);
-        file_put_contents($file, print_r($var,true)."\r\n", FILE_APPEND);
+        //if (Constants::IS_DEBUG_MODE || $override_debug_mode) {
+            $file = TDW_GITHUB_POSTS_PLUGIN_DIR . '/logs/' . ($log_name ?? 'log');
+            file_put_contents($file, "\r\n------------" . date("Y-m-d H:i:s") . " --------------------------------------------------\r\n", FILE_APPEND);
+            file_put_contents($file, print_r($var, true) . "\r\n", FILE_APPEND);
+        //}
     }
 
     /**

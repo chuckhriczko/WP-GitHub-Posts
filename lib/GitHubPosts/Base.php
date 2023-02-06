@@ -8,32 +8,36 @@ use Tdw\GitHubPosts\Types\GitHubUser;
 
 class Base
 {
-    //Declare our utility object
+    //Declare our necessary classes
+    public Admin $admin;
+    public GitHub $gitHub;
+    public Shortcodes $shortcodes;
     public Utils $utils;
 
     //Declare our user and repo data
     public GitHubUser $user;
     public array $repos = [];
 
+    //Cache settings
     private string $userdata_cache_file;
     private string $repodata_cache_file;
 
     public function __construct(){
-        //Set our cache file locations
-        $this->userdata_cache_file = TDW_GITHUB_POSTS_PLUGIN_DIR.'/cache/userdata.json';
-        $this->repodata_cache_file = TDW_GITHUB_POSTS_PLUGIN_DIR.'/cache/repodata.json';
-
-        //Initialize our utilities class
-        $this->utils = new Utils();
-
         //Initialize debug mode, if set
         $this->initDebugMode();
 
         //Init directories
         $this->initDirectories();
 
-        //Init our shortcodes
-        (Shortcodes::getInstance());
+        //Set our cache file locations
+        $this->userdata_cache_file = TDW_GITHUB_POSTS_PLUGIN_DIR.'/cache/userdata.json';
+        $this->repodata_cache_file = TDW_GITHUB_POSTS_PLUGIN_DIR.'/cache/repodata.json';
+
+        //Initialize our classes
+        $this->admin = new Admin();
+        $this->gitHub = new GitHub();
+        $this->shortcodes = new Shortcodes();
+        $this->utils = new Utils();
 
         //Get our data
         $this->getGitHubData();
@@ -54,9 +58,12 @@ class Base
         $this->utils->log("Cache expired at " . date('m-j-Y H:i:s', filemtime($this->userdata_cache_file)));
 
         try {
+            //Get the username from our settings page
+            $username = get_option('tdw-github-posts-settings-username', Constants::USERS_URL);
+
             //Create our client and send the request
             $client = HttpClient::create();
-            $response = $client->request('GET', Constants::USERS_URL);
+            $response = $client->request('GET', $username);
 
             //Verify the result is successful
             if (!$this->utils->isSuccess($response)) {
@@ -71,7 +78,6 @@ class Base
 
             //Create the user object from the JSON retrieved
             $this->user = new GitHubUser($userdata);
-            $this->utils->log($this->user);
 
             //Verify we have a repos url
             if (!(isset($this->user->repos_url) && !empty($this->user->repos_url))) {

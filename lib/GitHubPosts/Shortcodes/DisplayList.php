@@ -4,10 +4,7 @@ namespace Tdw\GitHubPosts\Shortcodes;
 
 class DisplayList
 {
-    //Declare our singleton instances array
-    private static array $instances;
-
-    protected function __construct(){
+    public function __construct(){
         //Add our shortcode
         add_shortcode('GitHubPostsDisplayList', array($this, 'display'), 10, 2);
     }
@@ -46,18 +43,5 @@ class DisplayList
 
         //Get the processed HTML and clean the output buffer
         return ob_get_clean();
-    }
-
-    /**
-     * Gets the instance of our singleton object, so we don't have to instantiate it
-     * @return mixed|static
-     */
-    public static function getInstance()
-    {
-        if (!isset(self::$instances[static::class])) {
-            self::$instances[static::class] = new static();
-        }
-
-        return self::$instances[static::class];
     }
 }
