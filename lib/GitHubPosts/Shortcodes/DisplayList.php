@@ -36,7 +36,7 @@ class DisplayList
         $template_file = (file_exists(get_template_directory() . $tpl) ? get_template_directory() : TDW_GITHUB_POSTS_PLUGIN_DIR).$tpl;
 
         //Process the results for the shortcode
-        $repos = $per_page === null ? $tdw_github_posts->repos : array_slice($tdw_github_posts->repos, 0, (int)$per_page);
+        $repos = $per_page === null ? $tdw_github_posts->gitHub->repos : array_slice($tdw_github_posts->gitHub->repos, 0, (int)$per_page);
 
         //Include our template
         include($template_file);

@@ -15,9 +15,7 @@ class Constants
     public const APP_NAME                = 'tdw-github-posts';
 
     //API Constants
-    public const USERS_URL = 'https://api.github.com/users/chuckhriczko';
-    public const REPOS_URL = 'https://api.github.com/users/chuckhriczko/repos?sort=created&direction=desc';
-    public const API_USERNAME = 'chuckhriczko';
+    public const USERS_URL = 'https://api.github.com/users/';
 
     //Caching Constants
     public const CACHE_EXPIRES = 60 * 10;
