@@ -47,6 +47,10 @@ class GitHub
         $this->utils->log("Cache expired at " . date('m-j-Y H:i:s', filemtime($this->userdata_cache_file)));
 
         try {
+            //Get our options
+            $sort = get_option('tdw-github-posts-settings-sort', 'created');
+            $sort_direction = get_option('tdw-github-posts-settings-sort-direction', 'desc');
+
             //Create our client and send the request
             $client = HttpClient::create();
             $response = $client->request('GET', Constants::USERS_URL.$this->username);
@@ -71,7 +75,7 @@ class GitHub
             }
 
             //Get the repo data
-            $repos_response = $client->request('GET', $this->user->repos_url.'?sort=created&direction=desc');
+            $repos_response = $client->request('GET', "{$this->user->repos_url}?sort={$sort}&direction={$sort_direction}");
 
             //Verify the result was successful
             if (!$this->utils->isSuccess($repos_response)) {

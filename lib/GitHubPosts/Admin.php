@@ -24,15 +24,43 @@ class Admin
         }, 10);
 
         add_action('admin_init', function(){
+            //Register our settings group and section
             register_setting('tdw-github-posts-settings', 'tdw-github-posts-settings-username');
             add_settings_section('tdw-github-posts-settings-section', 'GitHub Posts Settings', function(){
 
             }, 'tdw-github-posts-settings');
 
+            //Username field
             add_settings_field('tdw-github-posts-settings-username', 'GitHub Username', function(){
                 $username = get_option('tdw-github-posts-settings-username', '');
 
                 echo "<input id='tdw-github-posts-settings-username' name='tdw-github-posts-settings-username' type='text' value='" . esc_attr( $username ?? '' ) . "' />";
+            }, 'tdw-github-posts-settings', 'tdw-github-posts-settings-section');
+
+            //Sort field
+            add_settings_field('tdw-github-posts-settings-sort', 'Sort By', function(){
+                $sort = get_option('tdw-github-posts-settings-sort', 'created');
+
+                echo "
+                    <select id='tdw-github-posts-settings-sort' name='tdw-github-posts-settings-sort' type='text' value='" . esc_attr( $sort ?? 'created' ) . "'>
+                        <option value='forks'".($sort === 'forks' ? ' selected="true"' : '').">Forks</option>
+                        <option value='stars'".($sort === 'stars' ? ' selected="true"' : '').">Stars</option>
+                        <option value='created'".($sort === 'created' ? ' selected="true"' : '').">Created Date</option>
+                        <option value='updated'".($sort === 'updated' ? ' selected="true"' : '').">Updated Date</option>
+                    </select>
+                ";
+            }, 'tdw-github-posts-settings', 'tdw-github-posts-settings-section');
+
+            //Sort Direction
+            add_settings_field('tdw-github-posts-settings-sort-direction', 'Sort Direction', function(){
+                $sort_direction = get_option('tdw-github-posts-settings-sort-direction', '');
+
+                echo "
+                    <select id='tdw-github-posts-settings-sort-direction' name='tdw-github-posts-settings-sort-direction' type='text' value='" . esc_attr( $sort_direction ?? '' ) . "'>
+                        <option value='desc'".($sort_direction === 'desc' ? ' selected="true"' : '').">Descending</option>
+                        <option value='asc'".($sort_direction === 'asc' ? ' selected="true"' : '').">Ascending</option>
+                    </select>
+                ";
             }, 'tdw-github-posts-settings', 'tdw-github-posts-settings-section');
         }, 10);
     }
